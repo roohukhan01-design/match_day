@@ -1,0 +1,15 @@
+{
+  "appId": "com.roohu.matchday",
+  "appName": "MatchDay",
+  "webDir": "www",
+  "backgroundColor": "#070d12",
+  "android": {
+    "backgroundColor": "#070d12",
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}
