@@ -82,7 +82,17 @@ header b{font-size:20px;font-weight:800;letter-spacing:.3px;flex:1;background:li
 .btn{padding:13px 16px;border-radius:14px;background:var(--soft);color:var(--ink);font-weight:700;transition:transform .15s}.btn:active{transform:scale(.95)}
 .btn.pri{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff}
 a.btn{text-decoration:none;display:inline-block;text-align:center}
-.btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.btns .btn{flex:1;min-width:120px}
+.btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;min-width:0;align-items:stretch}.btns .btn{flex:1 1 135px;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.25;padding:13px 12px;min-height:54px;overflow:hidden;text-overflow:ellipsis}
+.btns .btn:only-child{flex-basis:100%}
+.searchbar{min-width:0;width:100%;overflow:hidden;box-sizing:border-box}
+.searchbar input{display:block;min-width:0;max-width:100%;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.4}
+#toast{z-index:120;bottom:calc(82px + env(safe-area-inset-bottom,0px));max-width:calc(100vw - 32px);white-space:normal;overflow-wrap:anywhere}
+.empty .btn{margin-top:14px;max-width:240px}
+#sheet .abt{min-width:0;overflow:hidden}
+#sheet .ar{min-width:0;flex-wrap:wrap;line-height:1.4}
+#sheet .ar span{flex:0 0 82px}
+#sheet .ar b{flex:1 1 150px;min-width:0;overflow-wrap:anywhere}
+#sheet .anm,#sheet .arl{overflow-wrap:anywhere;line-height:1.35}
 .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14.5px}.row:last-child{border-bottom:0}
 .row small{display:block;color:var(--sub);font-size:12px}
 .big{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 0;min-width:0}.big .tl{width:42px;height:42px;font-size:14px}.big .tn{font-size:clamp(14px,4vw,18px);min-width:0;overflow-wrap:anywhere;line-height:1.2}.big .sc{font-size:clamp(20px,6vw,29px);white-space:nowrap;font-variant-numeric:tabular-nums;max-width:100%}
@@ -447,7 +457,7 @@ function render(){
   var L=visible();
   if(D.loading&&!D.list.length){h+='<div class="sk"></div><div class="sk"></div><div class="sk"></div>'}
   else if(!L.length){
-    h+='<div class="empty"><b>'+(sp==='football'?'⚽':'🏏')+'</b>'+(D.list.length?'No matches here.<br>Try another day or filter.':(D.err?'Nothing to show yet.':'No matches found.'))+'</div>';
+    h+='<div class="empty"><b>'+(sp==='football'?'⚽':'🏏')+'</b>'+(D.list.length?'No matches match these filters.':(D.err?'No verified matches are available right now.':'No matches found.'))+'<br><button class="btn" data-act="resetFilters">Reset filters</button></div>';
   }else{
     var last='',i=0;
     L.forEach(function(e){if(e.league!==last){last=e.league;h+='<div class="grp">'+esc(e.league)+'</div>'}h+=card(e,i++)});
@@ -624,6 +634,7 @@ function reportSheet(){
 
 /* ---------- actions ---------- */
 var A={
+  resetFilters:function(){P.query='';P.status='all';P.fav=false;P.day=0;save();render();toast('Filters reset')},
   density:function(){P.dense=!P.dense;save();render();menuSheet()},
   theme:function(){P.theme=P.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=P.theme;save();menuSheet()},
   clearCache:function(){if(!confirm('Remove saved score snapshots? Favorites will stay.'))return;try{localStorage.removeItem(CACHE_KEY)}catch(e){};['football','cricket'].forEach(function(sp){DATA[sp].cached=false});toast('Saved snapshots cleared');menuSheet()},
