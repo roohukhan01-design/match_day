@@ -1,0 +1,14 @@
+{
+  "name": "matchday",
+  "version": "1.3.0",
+  "private": true,
+  "description": "MatchDay football and cricket scores",
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
+  }
+}
