@@ -450,7 +450,7 @@ function render(){
   $('#c1').style.display=sp==='football'?'flex':'none';
   var st=[['all','All'],['live','● Live'],['pre','Upcoming'],['post','Finished']];
   $('#c2').innerHTML=st.map(function(s){return'<button class="'+(P.status===s[0]?'on':'')+(s[0]==='live'?' lv':'')+'" data-act="status" data-v="'+s[0]+'">'+s[1]+'</button>'}).join('')+'<button class="'+(P.fav?'on':'')+'" data-act="fav">⭐ My teams</button>';
-  var h='<div class="searchbar"><label for="matchSearch">Find matches or teams</label><input id="matchSearch" type="search" placeholder="Search '+(sp==='football'?'clubs, leagues':'teams, series')+'…" value="'+esc(P.query)+'" autocomplete="off" aria-label="Filter matches"></div>';
+  var h='<div class="searchbar"><label for="matchSearch">'+(sp==='football'?'Find clubs and leagues':'Find teams and series')+'</label><input id="matchSearch" type="search" placeholder="Search '+(sp==='football'?'clubs, leagues':'teams, series')+'…" value="'+esc(P.query)+'" autocomplete="off" aria-label="Filter matches"></div>';
   if(D.cached&&D.list.length)h+='<div class="banner" role="status">Offline or saved scores · Last received '+new Date(D.t).toLocaleString()+'. These are historical snapshots, not live updates. <button class="btn" data-act="refresh">Retry</button></div>';
   if(D.demo)h+='<div class="banner">Preview mode with sample matches. Live scores load inside the MatchDay Android app.</div>';
   if(D.err)h+='<div class="banner">'+esc(D.err)+'. The free score source may be down or blocked. Tap ↻ to try again, or open Settings to see the source report.</div>';
