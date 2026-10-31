@@ -85,7 +85,22 @@ a.btn{text-decoration:none;display:inline-block;text-align:center}
 .btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.btns .btn{flex:1;min-width:120px}
 .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14.5px}.row:last-child{border-bottom:0}
 .row small{display:block;color:var(--sub);font-size:12px}
-.big{display:flex;align-items:center;gap:12px;padding:8px 0}.big .tl{width:44px;height:44px;font-size:14px}.big .tn{font-size:18px}.big .sc{font-size:30px}
+.big{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 0;min-width:0}.big .tl{width:42px;height:42px;font-size:14px}.big .tn{font-size:clamp(14px,4vw,18px);min-width:0;overflow-wrap:anywhere;line-height:1.2}.big .sc{font-size:clamp(20px,6vw,29px);white-space:nowrap;font-variant-numeric:tabular-nums;max-width:100%}
+#sheet{width:100%;max-width:560px;max-height:calc(100dvh - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain;min-height:0;padding-left:16px;padding-right:16px}
+#sw{align-items:flex-end}
+#sheet h2{font-size:22px}
+.score-unavailable{display:flex;gap:12px;align-items:flex-start;padding:16px 14px;margin:14px 0;border:1px solid var(--line);background:var(--soft);border-radius:16px;color:var(--ink)}
+.score-unavailable .su-icon{font-size:24px}
+.score-unavailable p{margin:5px 0 0;color:var(--sub);font-size:13px;line-height:1.5}
+.abt{position:relative;overflow:hidden;background:linear-gradient(145deg,var(--panel),var(--soft));border:1px solid var(--line);border-radius:22px;padding:18px;margin:14px 0}
+.abt:before{content:"";display:block;height:4px;position:absolute;top:0;left:0;right:0;background:linear-gradient(90deg,var(--a1),var(--a2))}
+.abt .anm{font-size:22px;font-weight:850;letter-spacing:-.4px}
+.abt .arl{font-size:13px;color:var(--sub);margin-top:4px;padding-bottom:14px}
+.abt .ar{display:grid;grid-template-columns:minmax(78px, .7fr) minmax(0,1.3fr);align-items:start;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:14px}
+.abt .ar span{color:var(--sub);flex:none}.abt .ar b{font-weight:650;text-align:right;overflow-wrap:anywhere;min-width:0}
+.abt .aft{margin-top:14px;font-size:12px;color:var(--sub);text-align:center;line-height:1.6}
+@media(max-width:380px){#sheet{padding-left:13px;padding-right:13px}.big{grid-template-columns:36px minmax(0,1fr) auto;gap:8px}.big .tl{width:36px;height:36px}.big .sc{font-size:20px}.abt{padding:15px}.btns .btn{min-width:0}}
+
 .ev{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;align-items:center}.ev:last-child{border-bottom:0}.ev .m{width:44px;color:var(--sub);font-weight:700}
 .ck{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px}.ck:last-child{border-bottom:0}
 input[type=checkbox]{width:20px;height:20px;accent-color:var(--a1);flex:none}
@@ -476,7 +491,7 @@ function dxHtml(e){
   if(e.sport==='cricket'){
     var c=e.live;
     if(c&&(c.bats.length||c.bowls.length))return liveHtml(c);
-    return'<div class="note">'+(e.dxState==='loading'?'Loading live details…':e.state==='pre'?'':'Batting and bowling details are not available from the free sources for this match.')+'</div>';
+    return'<div class="score-unavailable"><span class="su-icon">🏏</span><div><b>Player scorecard unavailable</b><p>We could not verify the individual batting and bowling figures from the available source. MatchDay will not guess player statistics.</p></div></div>';
   }
   var list=(e.moments&&e.moments.length)?e.moments:e.details;
   if(list&&list.length)return momentsHtml(list);
@@ -535,12 +550,9 @@ function scanCricket(root){
 }
 function dedupe(rows){var m={};rows.forEach(function(r){m[r.name]=r});return Object.keys(m).map(function(k){return m[k]}).sort(function(a,b){return a.i-b.i})}
 function pickLive(bats,bowls){
-  bats=dedupe(bats);bowls=dedupe(bowls);
-  var cur=bats.filter(function(b){return b.cur}).slice(-2),approx=false;
-  if(!cur.length){cur=bats.filter(function(b){return!b.out}).slice(-2);approx=cur.length>0}
-  var bw=bowls.filter(function(b){return b.cur}).slice(-2);
-  if(!bw.length){bw=bowls.slice(-2);if(bw.length)approx=true}
-  return{bats:cur,bowls:bw,approx:approx};
+  /* Never infer the active players from an unordered statistics payload.
+     The public endpoints often mix innings and team totals. */
+  return{bats:[],bowls:[],approx:false,unverified:true};
 }
 function loadFootballDetail(e){
   var tries=[];
@@ -562,7 +574,7 @@ function loadCricketDetail(e){
   });
 }
 function loadDetail(e){
-  if(DATA[e.sport].demo||e.state==='pre'){e.dxState='done';setDx(e);return}
+  if(DATA[e.sport].demo||e.state==='pre'||e.state==='post'){e.dxState='done';setDx(e);return}
   e.dxState='loading';setDx(e);
   if(e.sport==='football')loadFootballDetail(e);else loadCricketDetail(e);
 }
@@ -595,7 +607,7 @@ function menuSheet(){
   var mail='roohukhan01@gmail.com';
   openSheet('<h2>Settings</h2><div class="btns" style="margin-top:6px"><button class="btn" data-act="leagues">⚽ Choose leagues</button><button class="btn" data-act="series">🏏 Cricket series</button></div><div class="btns"><button class="btn" data-act="source">⚡ Score source: '+({auto:'Auto (fastest)',espn:'ESPN only',sofa:'Sofascore only'}[P.source])+'</button></div><div class="btns"><button class="btn" data-act="report">📡 Source report</button></div>'
   +'<div class="btns"><button class="btn" data-act="density">'+(P.dense?'✓ Compact cards':'Compact cards')+'</button><button class="btn" data-act="theme">'+(P.theme==='dark'?'☀ Light theme':'☾ Dark theme')+'</button></div><div class="btns"><button class="btn" data-act="clearCache">Clear saved scores</button><button class="btn" data-act="exportPrefs">Export preferences</button></div>'
-  +'<div class="abt" style="margin-top:16px"> <div class="anm">About MatchDay</div><div class="arl">Version 1.3 · Discovery & personalization</div>'
+  +'<div class="abt" style="margin-top:16px"><div style="display:flex;align-items:center;gap:12px;margin:8px 0 14px"><div style="width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg,var(--a1),var(--a2));display:grid;place-items:center;color:white;font-size:25px;font-weight:900;box-shadow:0 8px 20px #0284c733">M</div><div><div class="anm">MatchDay</div><div class="arl" style="padding:0">Your matchday companion · v1.4</div></div></div><div class="note" style="margin:0 0 10px">Scores, fixtures and match information for the sports you follow.</div>'
   +'<div class="ar"><span>Developer</span><b>Roohu</b></div><div class="ar"><span>Support</span><b>'+mail+'</b></div><div class="ar"><span>Data</span><b>ESPN and Sofascore public scores (unofficial)</b></div><div class="ar"><span>Privacy</span><b>No account. Favorites stay on this phone</b></div>'
   +'<div class="btns"><a class="btn pri" href="mailto:'+mail+'?subject=MatchDay%20support">✉ Contact support</a><button class="btn" data-act="copyMail">📋 Copy email</button></div><div class="aft">© 2026 Roohu. All rights reserved.</div></div><div class="btns"><button class="btn" data-act="closeSheet">Close</button></div>');
 }
